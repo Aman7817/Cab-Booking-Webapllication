@@ -1,0 +1,19 @@
+{
+  "name": "taxi-booking-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js" 
+  },
+  "keywords": [
+    "javascript",
+    "backend"
+  ],
+  "author": "Aman Gurjar",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.1.7",
+    "prettier": "^3.3.3"
+  }
+}
