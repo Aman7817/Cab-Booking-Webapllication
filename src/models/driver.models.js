@@ -1,9 +1,8 @@
 import mongoose, { Schema } from "mongoose";
-import jwt from "jsonwebtoken"; // Library for creating and verifying JSON Web Tokens
-import bcrypt from "bcrypt"; // Library for hashing and comparing passwords
+import { vehicle } from "./vehicle.models.js";
 
 // Define the schema for a driver
-const driverSchema = new Schema(
+const driverSchema = new mongoose.Schema(
     {
         // Driver's username
         driverName: {
@@ -43,6 +42,10 @@ const driverSchema = new Schema(
             type: String,
             required: true, // Mandatory field
             unique: true, // Ensures no two drivers can have the same license number
+        },
+        vehicalId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Vehicle',
         },
         // Token for refreshing access tokens
         refreshToken: {
