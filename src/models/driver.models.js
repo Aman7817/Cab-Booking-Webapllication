@@ -1,5 +1,7 @@
-import mongoose, { Schema } from "mongoose";
-import { vehicle } from "./vehicle.models.js";
+import mongoose from "mongoose";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { ApiError } from "../utils/ApiError.js";
 
 // Define the schema for a driver
 const driverSchema = new mongoose.Schema(
@@ -7,85 +9,88 @@ const driverSchema = new mongoose.Schema(
         // Driver's username
         driverName: {
             type: String,
-            required: true, // Mandatory field
-            trim: true, // Removes extra spaces
+            required: true,
+            trim: true,
         },
         // Driver's full name
         fullname: {
             type: String,
-            required: true, // Mandatory field
-            trim: true, // Removes extra spaces
+            required: true,
+            trim: true,
         },
         // Driver's date of birth
         birth_date: {
             type: Date,
-            required: true, // Mandatory field
+            required: true,
         },
         // Driver's email (must be unique)
         email: {
             type: String,
-            required: true, // Mandatory field
-            unique: true, // Ensures no two drivers can have the same email
+            required: true,
+            unique: true,
         },
         // Driver's password (stored as a hash)
         password: {
             type: String,
-            required: true, // Mandatory field
+            required: true,
         },
         // Driver's phone number
         phone: {
             type: String,
-            required: true, // Mandatory field
+            required: true,
         },
         // Driver's license number (must be unique)
         licenseNumber: {
             type: String,
-            required: true, // Mandatory field
-            unique: true, // Ensures no two drivers can have the same license number
+            required: true,
+            unique: true,
         },
-        vehicalId: {
+        vehicleId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Vehicle',
         },
+        // online or offline status
+        isAvailable: {
+            type: Boolean,
+            default: false, // by default, the driver is offline
+        },
         // Token for refreshing access tokens
         refreshToken: {
-            type: String, // Optional field
+            type: String,
+            default: null,
         },
     },
     {
-        timestamps: true, // Automatically adds createdAt and updatedAt fields
+        timestamps: true,
     }
 );
 
 // Middleware to hash the password before saving a driver document
 driverSchema.pre("save", async function (next) {
-    // If the password is not modified, skip hashing
     if (!this.isModified("password")) {
         return next();
     }
-
-    // Hash the password with a salt round of 10
     this.password = await bcrypt.hash(this.password, 10);
     next();
 });
 
 // Method to compare a given password with the hashed password
 driverSchema.methods.isPasswordCorrect = async function (password) {
-    return await bcrypt.compare(password, this.password); // Returns true or false
+    return await bcrypt.compare(password, this.password);
 };
 
 // Method to generate an access token for the driver
 driverSchema.methods.generateAccessToken = async function () {
     return jwt.sign(
         {
-            _id: this.id, // Unique identifier for the driver
-            email: this.email, // Driver's email
-            driverName: this.driverName, // Driver's username
-            fullname: this.fullname, // Driver's full name
+            _id: this.id,
+            email: this.email,
+            driverName: this.driverName,
+            fullname: this.fullname,
         },
-        process.env.ACCESS_TOKEN_SECRET, // Secret key for signing
+        process.env.ACCESS_TOKEN_SECRET,
         {
-            expiresIn: process.env.ACCESS_TOKEN_EXPIRY, // Token expiry duration
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
         }
     );
 };
@@ -94,13 +99,24 @@ driverSchema.methods.generateAccessToken = async function () {
 driverSchema.methods.generateRefreshToken = async function () {
     return jwt.sign(
         {
-            _id: this._id, // Unique identifier for the driver
+            _id: this._id,
         },
-        process.env.REFRESH_TOKEN_SECRET, // Secret key for signing the refresh token
+        process.env.REFRESH_TOKEN_SECRET,
         {
-            expiresIn: process.env.REFRESH_TOKEN_EXPIRY, // Refresh token expiry duration
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
         }
     );
+};
+
+// Method to update driver availability
+driverSchema.methods.updateAvailability = async function (status) {
+    try {
+        this.isAvailable = status;
+        await this.save();
+        return this.isAvailable;
+    } catch (error) {
+        throw new ApiError(500, "Failed to update driver availability");
+    }
 };
 
 // Create and export the Driver model
