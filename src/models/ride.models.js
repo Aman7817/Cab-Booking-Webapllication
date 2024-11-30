@@ -17,26 +17,27 @@ const rideSchema = new Schema(
         driverId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Driver",
-            required: true,
             index: true, // Index for optimization
         },
         // Reference to the Vehicle used for the ride
         vehicleId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Vehicle",
-            required: true,
         },
         // Starting point of the ride
         source: {
-            type: String,
-            required: true,
-            trim: true, // Removes extra spaces
+            type: { type: String, enum: ["Point"], required: true },
+            coordinates: { type: [Number], required: true }, // [longitude, latitude]
         },
         // Destination point of the ride
         destination: {
-            type: String,
+            type: { type: String, enum: ["Point"], required: true },
+            coordinates: { type: [Number], required: true }, // [longitude, latitude]
+        },
+        distance: { // Distance in kilometers
+            type: Number,
             required: true,
-            trim: true, // Removes extra spaces
+            min: 0,
         },
         // Price for the ride
         Price: {
@@ -53,14 +54,35 @@ const rideSchema = new Schema(
         // Current status of the ride
         status: {
             type: String,
-            enum: ["pending", "completed", "cancelled"], // Allowed values
+            enum: ["pending", "scheduled", "completed", "cancelled"], // Added "scheduled"
             default: "pending", // Default value
+        },
+        // Scheduled time for future booking
+        scheduledTime: {
+            type: Date, // Time for the future booking
+        },
+        // Actual start time of the ride
+        startTime: {
+            type: Date,
+        },
+        // Actual end time of the ride
+        endTime: {
+            type: Date,
+        },
+        // Reference to rating or review
+        ratingId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "RatingAndReview",
         },
     },
     {
-        timestamps: true // Automatically adds createdAt and updatedAt fields
+        timestamps: true, // Automatically adds createdAt and updatedAt fields
     },
 );
+
+// Add GeoJSON indexes for geospatial queries
+rideSchema.index({ source: "2dsphere" });
+rideSchema.index({ destination: "2dsphere" });
 
 // Create and export the Ride model
 export const Ride = mongoose.model("Ride", rideSchema);
