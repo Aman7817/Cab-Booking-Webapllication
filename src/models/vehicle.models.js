@@ -21,12 +21,25 @@ const vehicleSchema = new Schema(
         car_color: {
             type: String,
             trim: true, // Removes leading/trailing spaces
+            default: "Unknown",
         },
         // Model of the car
         car_model: {
             type: String,
             trim: true, // Removes leading/trailing spaces
             required: true, // Makes it mandatory
+        },
+        // License plate or registration number (important for tracking)
+        licensePlate:{
+            type: String,
+            required: true,
+            unique: true,
+            trim: true,
+        },
+         // Vehicle availability status
+        isAssigned:{
+            type: Boolean,
+            default: false,
         },
     },
     {

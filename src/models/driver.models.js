@@ -54,6 +54,16 @@ const driverSchema = new mongoose.Schema(
             type: Boolean,
             default: false, // by default, the driver is offline
         },
+
+        location: {
+            type: { type: String, enum: ["Point"], default: "Point" },
+            coordinates: {
+                type: [Number], // [longitude, latitude]
+                required: true,
+            },
+        },
+        
+        
         // Token for refreshing access tokens
         refreshToken: {
             type: String,
@@ -64,6 +74,8 @@ const driverSchema = new mongoose.Schema(
         timestamps: true,
     }
 );
+
+driverSchema.index({ location: "2dsphere" }); // GeoJSON index
 
 // Middleware to hash the password before saving a driver document
 driverSchema.pre("save", async function (next) {
@@ -108,6 +120,23 @@ driverSchema.methods.generateRefreshToken = async function () {
     );
 };
 
+const getNearbyDrivers = async (sourceLocation) => {
+    const drivers = await Driver.find({
+       isAvailable: true,
+       location: {
+          $near: {
+             $geometry: {
+                type: "Point",
+                coordinates: [sourceLocation.longitude, sourceLocation.latitude], // [longitude, latitude]
+             },
+             $maxDistance: 5000, // For example, 5 km radius
+          },
+       },
+    }).exec();
+ 
+    return drivers;
+ };
+ 
 // Method to update driver availability
 driverSchema.methods.updateAvailability = async function (status) {
     try {
@@ -115,6 +144,7 @@ driverSchema.methods.updateAvailability = async function (status) {
         await this.save();
         return this.isAvailable;
     } catch (error) {
+        // console.error("Error updating driver availability:", error.message);
         throw new ApiError(500, "Failed to update driver availability");
     }
 };
