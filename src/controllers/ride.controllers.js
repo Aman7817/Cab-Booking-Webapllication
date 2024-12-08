@@ -255,31 +255,46 @@ const getNearbyDrivers = asyncHandler(async(req,res) => {
 
 // User's  ride history
 
-const getRideHistory = asyncHandler(async(req,res) => {
-   const {userId} = req.body;
+const getRideHistory = asyncHandler(async (req, res) => {
+   const { userId, startDate, endDate } = req.body;
 
-   if(!userId) {
-      throw new ApiError(404,"Useer id is required");
+   // Validate required fields
+   if (!userId) {
+      throw new ApiError(404, "User ID is required");
    }
 
-   // fetch the all rides 
-   // fetching ride history based on dates (e.g., by month, year, or specific date range).
-   const {startDate,endDate} = req.body;
-   const rides = await Ride.find({userId ,createdAt: {$gte: new Date(startDate), $lte: new Date(endDate) }});
-   .sort({createdAt: -1}) // most recent rides first
-   .populate("driverId", "name email") // Populate driver details (optional)
-   .populate("vehicleId", "car_model") // Populate vehicle details (optional)
-   
-   if(!rides || rides.length === 0) {
-      throw new ApiError(400,"no rides found for the user")
-   };
+   if (!startDate || !endDate) {
+      throw new ApiError(400, "Both startDate and endDate are required");
+   }
 
-   // return the ride history 
+   try {
+      // Fetch rides based on userId and date range
+      const rides = await Ride.find({
+         userId,
+         createdAt: {
+            $gte: new Date(startDate),
+            $lte: new Date(endDate),
+         },
+      })
+         .sort({ createdAt: -1 }) // Most recent rides first
+         .populate("driverId", "name email") // Populate driver details (optional)
+         .populate("vehicleId", "car_model"); // Populate vehicle details (optional)
 
-   return res.status(200).json(
-      new ApiResponse(200, rides, "Ride history fetched successfully"));
+      // If no rides found
+      if (!rides || rides.length === 0) {
+         throw new ApiError(404, "No rides found for the user in the given date range");
+      }
 
+      // Return the ride history
+      return res.status(200).json(
+         new ApiResponse(200, rides, "Ride history fetched successfully")
+      );
+   } catch (error) {
+      // Handle unexpected errors
+      throw new ApiError(500, "An error occurred while fetching ride history");
+   }
 });
+
 
 
 
