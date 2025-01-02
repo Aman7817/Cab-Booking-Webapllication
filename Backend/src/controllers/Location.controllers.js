@@ -12,7 +12,7 @@ const updateDriverLocation = asyncHandler (async(req,res) => {
     // check if driverId ,latitude and longtitude are provided
 
     if(!driverId || latitude == NULL || longitude == NULL) {
-        throw new ApiErrorError(400,"DriverId ,latitude and longitude are required");
+        throw new ApiError(400,"DriverId ,latitude and longitude are required");
         
     }
 
