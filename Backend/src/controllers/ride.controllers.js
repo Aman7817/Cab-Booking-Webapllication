@@ -39,6 +39,18 @@ const createRide = asyncHandler(async(req,res) => {
         throw new ApiError(400,"All fields must be provided");
      }
 
+     if(source.type !== "Point" || !Array.isArray(source.coordinates) || source.coordinates.length !== 2){
+         throw new ApiError(400, "Source must be a valid GeoJSON Point");
+
+      }
+      if(destination.type !== "Point" || !Array.isArray(destination.coordinates) || destination.coordinates.length !== 2){
+         throw new ApiError(400, "Destination must be a valid GeoJSON Point");
+      }
+      // Validate scheduled time
+      if (scheduledTime && new Date(scheduledTime) <= new Date()) {
+         throw new ApiError(400, "Scheduled time must be in the future");
+      }
+
       // Fetch the user to get the email
     const user = await User.findById(userId);
     if (!user) {
@@ -53,7 +65,7 @@ const createRide = asyncHandler(async(req,res) => {
          destination,
          Price,
          distance,
-         status: scheduledTime ? RideStatus.SCHEDULED : RideStatus.PENDING, // Future booking if scheduledTime exists 
+         status: scheduledTime ? Ridestatus.SCHEDULED : Ridestatus.PENDING, // Future booking if scheduledTime exists 
          scheduledTime,
      });
 

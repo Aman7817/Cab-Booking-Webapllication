@@ -33,6 +33,7 @@ import driverRouter from "./routes/driver.routes.js";
 import vehicleRouter from "./routes/vehicle.routes.js"
 import PaymentRouter from "./routes/payment.routes.js";
 import mapRouter from"./routes/maps.routes.js"
+import ridebookingRouter from "./routes/routes.booking.js"
 
 // routes declaration
 app.use("/api/v1/users", userRouter); // Use userRouter for user-related routes
@@ -40,6 +41,7 @@ app.use("/api/v1/drivers",driverRouter) // use driverRouter for driver-related r
 app.use("/api/v1/vehicles",vehicleRouter) // use vehicleRoute for vehicle related routes
 app.use("/api/v1/payment", PaymentRouter); // Use PaymentRouter for payment-related routes
 app.use("/api/v1/coordinates",mapRouter)
+app.use("/api/v1/booking",ridebookingRouter)
 
 // http://localhost:8000/api/v1/payment/payments
 
