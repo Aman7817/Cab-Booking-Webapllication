@@ -193,9 +193,6 @@ const getDriverCountByStatus = asyncHandler(async (req, res) => {
 });
 
 
-
-
-
 export {
    registerDriver,
    loginDriver,

@@ -1,6 +1,9 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { fileURLToPath } from 'url';
+import path from "path";
+
 const app = express();
 
 // Enable Cross-Origin Resource Sharing (CORS)
@@ -10,6 +13,15 @@ app.use(cors({
     credentials: true                   // Allows cookies and credentials to be sent with requests
 }));
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+// Serve static files from the "backend" folder (for testing purpose)
+app.use(express.static(path.join(__dirname, "Backend"))); // Backend folder ko static serve karenge
+
+// Default route
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "Backend", "index.html"));
+});
 // Middleware to parse JSON bodies in incoming requests
 // The 'limit' option restricts the maximum size of the JSON payload
 app.use(express.json({ limit: "20kb" }));

@@ -1,13 +1,40 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cab Booking</title>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <h1>Cab Booking Ride</h1>
+    <button id="requestRide">Request Ride</button>
+
+    <script>
+        const socket = io("http://localhost:8001"); // Your backend server URL
+
+        // Sending a ride request
+        document.getElementById("requestRide").addEventListener("click", () => {
+            socket.emit("rideRequest", { longitude: 77.5946, latitude: 12.9716 });
+        });
+
+        // Listening to ride request events
+        socket.on("newRide", (data) => {
+            console.log("New Ride Data:", data);
+        });
+
+        socket.on("rideAccept", (data) => {
+            console.log("Ride Accepted:", data);
+        });
+
+        socket.on("driverLocation", (data) => {
+            console.log("Driver Location Updated:", data);
+        });
+
+        socket.on("rideStatusUpdated", (data) => {
+            console.log("Ride Status Updated:", data);
+        });
+    </script>
+</body>
 </html>
+

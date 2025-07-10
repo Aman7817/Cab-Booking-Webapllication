@@ -52,7 +52,7 @@ const driverSchema = new mongoose.Schema(
         // online or offline status
         isAvailable: {
             type: Boolean,
-            default: false, // by default, the driver is offline
+            default: true, // by default, the driver is offline
         },
 
         location: {
@@ -125,7 +125,11 @@ driverSchema.methods.generateRefreshToken = async function () {
     );
 };
 
-const getNearbyDrivers = async (sourceLocation) => {
+
+driverSchema.statics.getNearbyDrivers = async (sourceLocation) => {
+    console.log("Longitude:", sourceLocation.longitude);
+console.log("Latitude:", sourceLocation.latitude);
+
     const drivers = await Driver.find({
        isAvailable: true,
        location: {
@@ -138,6 +142,7 @@ const getNearbyDrivers = async (sourceLocation) => {
           },
        },
     }).exec();
+    console.log("Found nearby drivers:", drivers);
  
     return drivers;
  };

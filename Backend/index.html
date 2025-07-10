@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cab Booking</title>
+    <script src="https://cdn.socket.io/4.4.0/socket.io.min.js"></script> <!-- Include socket.io client -->
+</head>
+<body>
+    <h1>Cab Booking Ride</h1>
+    <button id="requestRide">Request Ride</button>
+
+    <!-- Display Drivers List -->
+    <h2>Nearby Drivers:</h2>
+    <ul id="driversList"></ul>
+
+    <script>
+        // Connect to the server using socket.io
+        const socket = io("http://localhost:8001"); // Your backend server URL
+
+        // Emit a "rideRequest" event on button click
+        document.getElementById("requestRide").addEventListener("click", () => {
+            socket.emit("rideRequest", { longitude: 77.5946, latitude: 12.9716 });
+        });
+
+        // Listen for "newRide" event from the server
+       // Listen for "newRide" event from the server
+    socket.on("newRide", (data) => {
+        console.log("New Ride Request:", data);
+
+        // Display nearby drivers
+        const driversList = document.getElementById("driversList");
+        driversList.innerHTML = ""; // Clear the list first
+
+        // Check if data.drivers is an array and has drivers
+        if (Array.isArray(data.drivers) && data.drivers.length > 0) {
+            data.drivers.forEach(driver => {
+                const listItem = document.createElement("li");
+                listItem.textContent = `Driver: ${driver.fullName} (Location: ${driver.location.coordinates})`;
+                driversList.appendChild(listItem);
+            });
+        } else {
+            driversList.innerHTML = "<li>No nearby drivers available</li>";
+        }
+    });
+        // Listen for "rideAccept" event
+        socket.on("rideAccept", (data) => {
+            console.log("Ride Accepted:", data);
+            alert("Ride Accepted: " + JSON.stringify(data));
+        });
+
+        // Listen for "driverLocation" event
+        socket.on("driverLocation", (data) => {
+            console.log("Driver Location Updated:", data);
+            alert("Driver Location: " + JSON.stringify(data));
+        });
+
+        // Listen for "rideStatusUpdated" event
+        socket.on("rideStatusUpdated", (data) => {
+            console.log("Ride Status Updated:", data);
+            alert("Ride Status Updated: " + JSON.stringify(data));
+        });
+    </script>
+</body>
+</html>

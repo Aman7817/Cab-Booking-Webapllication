@@ -2,6 +2,8 @@ import dotenv from "dotenv";
 import portfinder from "portfinder";
 import connectDB from "./db/index.js";
 import { app } from "./app.js";
+import {initSocket} from "./utils/socket.io.js"
+import { createServer, Server } from 'http';
 
 dotenv.config(); // Automatically looks for .env in the root folder
 
@@ -16,7 +18,12 @@ connectDB()
                 console.log("Error finding available port:", err);
                 process.exit(1); // Exit if port finding fails
             }
-            app.listen(port, () => {
+            const server = createServer(app);
+
+            initSocket(server);
+
+            //satrt the server
+            server.listen(port, () => {
                 console.log(`Server is running at Port: ${port}`);
             });
         });
@@ -24,3 +31,5 @@ connectDB()
     .catch((error) => {
         console.log("MongoDB connection failed!!", error);
     });
+
+

@@ -6,6 +6,8 @@ import { Ride } from "../models/ride.models.js";
 import { Driver } from "../models/driver.models.js";
 import {User} from "../models/user.models.js";
 import {sendEmail} from "../utils/mailService.js";
+import { Socket } from "socket.io";
+import { getSocket } from "../utils/socket.io.js";
 
 // Define ride statuses
 
@@ -68,6 +70,8 @@ const createRide = asyncHandler(async(req,res) => {
          status: scheduledTime ? Ridestatus.SCHEDULED : Ridestatus.PENDING, // Future booking if scheduledTime exists 
          scheduledTime,
      });
+      // // Emit event to notify about the new ride
+      // req.app.get('io').emit("newRide", ride)
 
      // Send email confirmation to the user
 
@@ -108,7 +112,7 @@ const assignDriver = asyncHandler(async(req,res) => {
          throw new ApiError(404,"Ride not found")
       }
        // Check if the ride is eligible for driver assignmen
-      if(![RideStatus.PENDING, RideStatus.SCHEDULED].includes(Ride.status)){
+      if(![Ridestatus.PENDING, Ridestatus.SCHEDULED].includes(Ride.status)){
          throw new ApiError(400,"Ride is not eligible for driver assignment")
       }
 
@@ -230,7 +234,7 @@ const completeRide = asyncHandler(async (req, res) => {
    }
 
    // Update ride status to completed
-   ride.status = RideStatus.COMPLETED;
+   ride.status = Ridestatus.COMPLETED;
 
    const completedRide = await ride.save();
 
@@ -246,22 +250,36 @@ const completeRide = asyncHandler(async (req, res) => {
 // Controller to get nearby drivers
 
 const getNearbyDrivers = asyncHandler(async(req,res) => {
+   console.log("Incoming Ride Request:", req.body);
    const {longitude,latitude} = req.body;
+ 
+    if(!longitude || !latitude) {
+       throw new ApiError(400,"Longitude and Latitude are required");
+     }
+     
 
-   if(!longitude || !latitude) {
-      throw new ApiError(400,"Longitude and Latitude are required");
+
+  try {
+ 
+    const nearbyDrivers = await Driver.getNearbyDrivers({longitude,latitude});
+ 
+    if(nearbyDrivers.length === 0){
+       throw new ApiError(404,"No avilable drivers nearby");
+ 
+     }
+     const io = getSocket();
+     // Broadcast ride request to all nearby drivers
+    io.emit("rideRequest", {  longitude, latitude });
+     //console.log("Nearby Drivers: ", Driver);
+ 
+    return res.status(200).json(
+       new ApiResponse(200, nearbyDrivers,"Nearby drivers fetched successfully")
+     )
+   } catch (error) {
+   console.error("Error: ", error.message);
+   res.status(404).json({ message: error.message });
+   
    }
-
-   const nearbyDrivers = await Driver.getNearbyDrivers({longitude,latitude});
-
-   if(nearbyDrivers.length === 0){
-      throw new ApiError(404,"No avilable drivers nearby");
-
-   }
-
-   return res.status(200).json(
-      new ApiResponse(200, nearbyDrivers,"Nearby drivers fetched successfully")
-   )
 });
 
 
