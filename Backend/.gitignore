@@ -1,2 +1,30 @@
-node_modules
+node_modules/
+# Logs
+logs/
+npm-debug.log*
+# Environment variables
 .env
+# Build output
+dist/
+# Dependency directories
+bower_components/
+
+# IDE specific files
+.idea/
+# OS specific files
+.DS_Store
+
+# Temporary files
+tmp/
+# Coverage reports
+coverage/
+# Build artifacts
+build/
+node_modules/
+# Yarn integrity file
+.yarn-integrity
+# Next.js build output
+
+.next/
+# Nuxt.js build output
+.nuxt/
