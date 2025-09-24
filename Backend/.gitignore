@@ -1,30 +1,25 @@
-node_modules/
 # Logs
-logs/
+logs
+*.log
 npm-debug.log*
-# Environment variables
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
 .env
-# Build output
-dist/
-# Dependency directories
-bower_components/
+dist
+dist-ssr
+*.local
 
-# IDE specific files
-.idea/
-# OS specific files
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
 .DS_Store
-
-# Temporary files
-tmp/
-# Coverage reports
-coverage/
-# Build artifacts
-build/
-node_modules/
-# Yarn integrity file
-.yarn-integrity
-# Next.js build output
-
-.next/
-# Nuxt.js build output
-.nuxt/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
